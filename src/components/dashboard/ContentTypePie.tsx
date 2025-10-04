@@ -1,15 +1,36 @@
+import { useMemo } from "react";
 import { Card } from "@/components/ui/card";
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts";
+import { PhotoMetadata } from "@/lib/db";
 
-const data = [
-  { name: "Пейзаж", value: 312, color: "hsl(var(--chart-1))" },
-  { name: "Портрет", value: 245, color: "hsl(var(--chart-2))" },
-  { name: "Еда", value: 156, color: "hsl(var(--chart-3))" },
-  { name: "Животные", value: 98, color: "hsl(var(--chart-4))" },
-  { name: "Другое", value: 263, color: "hsl(var(--chart-5))" },
-];
+interface ContentTypePieProps {
+  photos: PhotoMetadata[];
+}
 
-const ContentTypePie = () => {
+const ContentTypePie = ({ photos }: ContentTypePieProps) => {
+  const data = useMemo(() => {
+    const typeCounts = new Map<string, number>();
+    
+    photos.forEach(photo => {
+      const type = photo.contentType || "Другое";
+      typeCounts.set(type, (typeCounts.get(type) || 0) + 1);
+    });
+
+    const chartColors = [
+      "hsl(var(--chart-1))",
+      "hsl(var(--chart-2))",
+      "hsl(var(--chart-3))",
+      "hsl(var(--chart-4))",
+      "hsl(var(--chart-5))",
+    ];
+
+    return Array.from(typeCounts.entries()).map(([name, value], index) => ({
+      name,
+      value,
+      color: chartColors[index % chartColors.length]
+    }));
+  }, [photos]);
+
   return (
     <Card className="p-6 shadow-card">
       <div className="mb-6">

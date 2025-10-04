@@ -1,22 +1,29 @@
+import { useMemo } from "react";
 import { Card } from "@/components/ui/card";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { PhotoMetadata } from "@/lib/db";
 
-const data = [
-  { month: "Янв", photos: 45 },
-  { month: "Фев", photos: 52 },
-  { month: "Мар", photos: 68 },
-  { month: "Апр", photos: 78 },
-  { month: "Май", photos: 92 },
-  { month: "Июн", photos: 105 },
-  { month: "Июл", photos: 118 },
-  { month: "Авг", photos: 95 },
-  { month: "Сен", photos: 82 },
-  { month: "Окт", photos: 73 },
-  { month: "Ноя", photos: 61 },
-  { month: "Дек", photos: 54 },
-];
+interface PhotosOverTimeProps {
+  photos: PhotoMetadata[];
+}
 
-const PhotosOverTime = () => {
+const PhotosOverTime = ({ photos }: PhotosOverTimeProps) => {
+  const data = useMemo(() => {
+    const monthCounts = new Map<string, number>();
+    const months = ["Янв", "Фев", "Мар", "Апр", "Май", "Июн", "Июл", "Авг", "Сен", "Окт", "Ноя", "Дек"];
+    
+    photos.forEach(photo => {
+      const date = new Date(photo.dateTaken);
+      const monthKey = months[date.getMonth()];
+      monthCounts.set(monthKey, (monthCounts.get(monthKey) || 0) + 1);
+    });
+
+    return months.map(month => ({
+      month,
+      photos: monthCounts.get(month) || 0
+    }));
+  }, [photos]);
+
   return (
     <Card className="p-6 shadow-card">
       <div className="mb-6">

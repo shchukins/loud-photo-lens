@@ -1,14 +1,11 @@
+import { useMemo } from "react";
 import { Card } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceArea } from "recharts";
+import { PhotoMetadata } from "@/lib/db";
 
-// Генерация данных по часам (0-23)
-const data = Array.from({ length: 24 }, (_, i) => ({
-  hour: i,
-  photos: Math.floor(Math.random() * 50) + 10, // Временные данные
-  fill: i >= 6 && i < 12 ? "hsl(var(--chart-2))" : 
-        i >= 12 && i < 18 ? "hsl(var(--chart-1))" :
-        i >= 18 && i < 22 ? "hsl(var(--chart-3))" : "hsl(var(--chart-4))"
-}));
+interface TimeOfDayChartProps {
+  photos: PhotoMetadata[];
+}
 
 // Периоды суток для фоновых зон
 const timeRanges = [
@@ -19,7 +16,24 @@ const timeRanges = [
   { start: 22, end: 24, name: "Ночь", fill: "hsl(var(--chart-4) / 0.1)" },
 ];
 
-const TimeOfDayChart = () => {
+const TimeOfDayChart = ({ photos }: TimeOfDayChartProps) => {
+  const data = useMemo(() => {
+    const hourCounts = new Map<number, number>();
+    
+    photos.forEach(photo => {
+      const hour = new Date(photo.dateTaken).getHours();
+      hourCounts.set(hour, (hourCounts.get(hour) || 0) + 1);
+    });
+
+    return Array.from({ length: 24 }, (_, i) => ({
+      hour: i,
+      photos: hourCounts.get(i) || 0,
+      fill: i >= 6 && i < 12 ? "hsl(var(--chart-2))" : 
+            i >= 12 && i < 18 ? "hsl(var(--chart-1))" :
+            i >= 18 && i < 22 ? "hsl(var(--chart-3))" : "hsl(var(--chart-4))"
+    }));
+  }, [photos]);
+
   return (
     <Card className="p-6 shadow-card">
       <div className="mb-6">
